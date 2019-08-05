@@ -62,7 +62,8 @@ public class StatusNotification {
                 .setContentTitle(_title)
                 .setContentText(_content)
                 .setOngoing(true)
-                .addAction(_isPlaying ? R.drawable.ic_pause : R.drawable.ic_play, "1232131", pendingNextIntent);
+                .setOnlyAlertOnce(true)
+                .addAction(_isPlaying ? R.drawable.ic_pause : R.drawable.ic_play, "control", pendingNextIntent);
         notification = builder.build();
         notify(context, notification);
     }

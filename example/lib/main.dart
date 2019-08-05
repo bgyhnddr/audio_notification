@@ -13,12 +13,23 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     AudioNotification.setMethodCallHandler((isPlaying) {
+      if (!isPlaying) {}
       setState(() {
         _isPlaying = isPlaying;
         AudioNotification.setPlayState(isPlaying);
       });
     });
     super.initState();
+  }
+
+  Future test() async {
+    await AudioNotification.setPlayState(true);
+    await AudioNotification.setPlayState(true);
+    await AudioNotification.setPlayState(true);
+    await AudioNotification.setPlayState(true);
+    await AudioNotification.setPlayState(true);
+    await AudioNotification.setPlayState(true);
+    await AudioNotification.setPlayState(false);
   }
 
   @override
@@ -65,6 +76,20 @@ class _MyAppState extends State<MyApp> {
               FlatButton(
                 child: Text('Hide notification'),
                 onPressed: () => AudioNotification.hide(),
+              ),
+              FlatButton(
+                child: Text('fast notification test'),
+                onPressed: () {
+                  setState(() {
+                    AudioNotification.setPlayState(true);
+                  });
+                  setState(() {
+                    AudioNotification.setPlayState(true);
+                  });
+                  setState(() {
+                    AudioNotification.setPlayState(false);
+                  });
+                },
               ),
               Text('Status: ' + (_isPlaying ? 'playing' : 'pausing'))
             ],
