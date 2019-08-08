@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.media.session.MediaSession;
 import android.os.Build;
+import android.view.KeyEvent;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -54,7 +55,16 @@ public class AudioNotificationPlugin implements MethodCallHandler {
                 mMediaSession.setCallback(new MediaSession.Callback() {
                     @Override
                     public boolean onMediaButtonEvent(Intent mediaButtonIntent) {
-                        AudioNotificationPlugin.callEvent("toggle");
+                        String intentAction = mediaButtonIntent.getAction();
+                        if (Intent.ACTION_MEDIA_BUTTON.equals(intentAction)) {
+                            KeyEvent event = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                            if (event != null) {
+                                int action = event.getAction();
+                                if (action == KeyEvent.ACTION_UP) {
+                                    AudioNotificationPlugin.callEvent("toggle");
+                                }
+                            }
+                        }
                         return true;
                     }
                 });
