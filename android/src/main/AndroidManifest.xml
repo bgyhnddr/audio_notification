@@ -3,6 +3,5 @@
     package="com.bgyhnddr.audio_notification">
 
     <application>
-        <receiver android:name="NotificationReturnSlot"></receiver>
     </application>
 </manifest>

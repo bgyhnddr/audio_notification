@@ -1,5 +1,13 @@
 package com.bgyhnddr.audio_notification;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.media.MediaPlayer;
+import android.media.session.MediaSession;
+import android.os.Build;
+
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -12,6 +20,9 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 public class AudioNotificationPlugin implements MethodCallHandler {
     private static Registrar registrar;
     private static MethodChannel channel;
+    private static MediaSession mMediaSession;
+    public final static String PLAY = "com.bgyhnddr.audio_notification.PLAY";
+    public final static String PAUSE = "com.bgyhnddr.audio_notification.PAUSE";
 
     /**
      * Plugin registration.
@@ -24,6 +35,46 @@ public class AudioNotificationPlugin implements MethodCallHandler {
     public static void registerWith(Registrar registrar) {
         channel = new MethodChannel(registrar.messenger(), "audio_notification");
         channel.setMethodCallHandler(new AudioNotificationPlugin(registrar));
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(PLAY);
+        filter.addAction(PAUSE);
+        registrar.context().registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                AudioNotificationPlugin.callEvent("toggle");
+            }
+        }, filter);
+    }
+
+    private static void initMediaSession() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (mMediaSession == null) {
+                mMediaSession = new MediaSession(registrar.context(), "audio_notification_tag");
+                mMediaSession.setCallback(new MediaSession.Callback() {
+                    @Override
+                    public boolean onMediaButtonEvent(Intent mediaButtonIntent) {
+                        AudioNotificationPlugin.callEvent("toggle");
+                        return true;
+                    }
+                });
+
+                mMediaSession.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS |
+                        MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
+
+                if (!mMediaSession.isActive()) {
+                    mMediaSession.setActive(true);
+                }
+            }
+        }
+    }
+
+    private static void releaseMediaSession() {
+        if (mMediaSession != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mMediaSession.setActive(false);
+            }
+        }
     }
 
     @Override
@@ -36,6 +87,7 @@ public class AudioNotificationPlugin implements MethodCallHandler {
                 title = call.argument("title");
                 content = call.argument("content");
                 StatusNotification.notify(registrar.context(), title, content);
+                initMediaSession();
                 result.success(true);
                 break;
             case "setPlayState":
@@ -50,6 +102,7 @@ public class AudioNotificationPlugin implements MethodCallHandler {
                 break;
             case "hide":
                 StatusNotification.cancel(registrar.context());
+                releaseMediaSession();
                 result.success(true);
                 break;
             case "getPlatformVersion":
@@ -61,7 +114,6 @@ public class AudioNotificationPlugin implements MethodCallHandler {
     }
 
 
-
     public static void callEvent(String event) {
         AudioNotificationPlugin.channel.invokeMethod(event, null, new Result() {
             @Override
@@ -70,10 +122,12 @@ public class AudioNotificationPlugin implements MethodCallHandler {
             }
 
             @Override
-            public void error(String s, String s1, Object o) {}
+            public void error(String s, String s1, Object o) {
+            }
 
             @Override
-            public void notImplemented() {}
+            public void notImplemented() {
+            }
         });
     }
 }

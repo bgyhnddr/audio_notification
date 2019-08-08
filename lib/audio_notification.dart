@@ -67,9 +67,9 @@ class AudioNotification {
     });
   }
 
-  static setMethodCallHandler(Function(bool) callback) {
+  static setMethodCallHandler(Function(String) callback) {
     _channel.setMethodCallHandler((MethodCall methodCall) async {
-      callback(methodCall.method == "play");
+      callback(methodCall.method);
     });
   }
 }

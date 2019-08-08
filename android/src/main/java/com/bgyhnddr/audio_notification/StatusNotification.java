@@ -47,9 +47,8 @@ public class StatusNotification {
         mediaStyle.setShowActionsInCompactView(0);
 
 
-        Intent nextIntent = new Intent(context, NotificationReturnSlot.class)
-                .setAction(_isPlaying ? "pause" : "play");
-        PendingIntent pendingNextIntent = PendingIntent.getBroadcast(context, 1, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent toggleIntent = new Intent(_isPlaying ? AudioNotificationPlugin.PLAY: AudioNotificationPlugin.PAUSE);
+        PendingIntent pendingToggleIntent = PendingIntent.getBroadcast(context, 1, toggleIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setVibrate(null)
@@ -63,7 +62,8 @@ public class StatusNotification {
                 .setContentText(_content)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
-                .addAction(_isPlaying ? R.drawable.ic_pause : R.drawable.ic_play, "control", pendingNextIntent);
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .addAction(_isPlaying ? R.drawable.ic_pause : R.drawable.ic_play, "control", pendingToggleIntent);
         notification = builder.build();
         notify(context, notification);
     }
