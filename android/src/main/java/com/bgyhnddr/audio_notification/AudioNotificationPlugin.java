@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.session.MediaSession;
 import android.os.Build;
@@ -46,6 +47,15 @@ public class AudioNotificationPlugin implements MethodCallHandler {
                 AudioNotificationPlugin.callEvent("toggle");
             }
         }, filter);
+
+        IntentFilter HEADSET_PLUG = new IntentFilter();
+        HEADSET_PLUG.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+        registrar.context().registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                AudioNotificationPlugin.callEvent("noisy");
+            }
+        }, HEADSET_PLUG);
     }
 
     private static void initMediaSession() {

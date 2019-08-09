@@ -12,11 +12,9 @@ class _MyAppState extends State<MyApp> {
   bool _isPlaying = false;
   @override
   void initState() {
-    AudioNotification.setMethodCallHandler((isPlaying) {
-      if (!isPlaying) {}
+    AudioNotification.setMethodCallHandler((method) {
       setState(() {
-        _isPlaying = isPlaying;
-        AudioNotification.setPlayState(isPlaying);
+        _isPlaying = !_isPlaying;
       });
     });
     super.initState();
