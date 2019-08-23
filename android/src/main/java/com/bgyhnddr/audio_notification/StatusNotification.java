@@ -42,8 +42,12 @@ public class StatusNotification {
         Intent toggleIntent = new Intent(_isPlaying ? AudioNotificationPlugin.PLAY : AudioNotificationPlugin.PAUSE);
         PendingIntent pendingToggleIntent = PendingIntent.getBroadcast(registrar.context(), 1, toggleIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(registrar.context(), 0, new Intent(registrar.context(), registrar.getClass()).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-
+        Intent notifyIntent = new Intent(registrar.context(), registrar.activity().getClass());
+        notifyIntent.setAction(Intent.ACTION_MAIN);
+        notifyIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        PendingIntent notifyPendingIntent = PendingIntent.getActivity(
+                registrar.context(), 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT
+        );
 
         builder = new NotificationCompat.Builder(registrar.context(), CHANNEL_ID)
                 .setVibrate(null)
@@ -58,7 +62,7 @@ public class StatusNotification {
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setContentIntent(contentIntent)
+                .setContentIntent(notifyPendingIntent)
                 .addAction(_isPlaying ? R.drawable.ic_pause : R.drawable.ic_play, "control", pendingToggleIntent);
         notification = builder.build();
         notify(registrar.context(), notification);
