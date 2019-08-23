@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.media.session.MediaSession;
 import android.os.Build;
 import android.view.KeyEvent;
@@ -106,18 +105,18 @@ public class AudioNotificationPlugin implements MethodCallHandler {
             case "show":
                 title = call.argument("title");
                 content = call.argument("content");
-                StatusNotification.notify(registrar.context(), title, content);
+                StatusNotification.notify(registrar, title, content);
                 initMediaSession();
                 result.success(true);
                 break;
             case "setPlayState":
                 isPlaying = call.argument("isPlaying");
-                StatusNotification.setPlayState(registrar.context(), isPlaying);
+                StatusNotification.setPlayState(registrar, isPlaying);
                 result.success(true);
                 break;
             case "setContent":
                 content = call.argument("content");
-                StatusNotification.setContent(registrar.context(), content);
+                StatusNotification.setContent(registrar, content);
                 result.success(true);
                 break;
             case "hide":

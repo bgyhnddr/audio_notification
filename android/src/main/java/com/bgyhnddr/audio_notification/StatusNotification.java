@@ -5,22 +5,14 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.MediaMetadata;
-import android.media.session.PlaybackState;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.app.NotificationCompat.MediaStyle;
-import android.support.v4.media.session.MediaButtonReceiver;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
+
+import androidx.core.app.NotificationCompat;
+import androidx.media.app.NotificationCompat.MediaStyle;
+
+import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /**
  * Helper class for showing and canceling status
@@ -42,15 +34,18 @@ public class StatusNotification {
     private static boolean _isPlaying = false;
     private static Notification notification;
 
-    private static void notify(final Context context) {
+    private static void notify(final Registrar registrar) {
         MediaStyle mediaStyle = new MediaStyle();
         mediaStyle.setShowActionsInCompactView(0);
 
 
-        Intent toggleIntent = new Intent(_isPlaying ? AudioNotificationPlugin.PLAY: AudioNotificationPlugin.PAUSE);
-        PendingIntent pendingToggleIntent = PendingIntent.getBroadcast(context, 1, toggleIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent toggleIntent = new Intent(_isPlaying ? AudioNotificationPlugin.PLAY : AudioNotificationPlugin.PAUSE);
+        PendingIntent pendingToggleIntent = PendingIntent.getBroadcast(registrar.context(), 1, toggleIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+        PendingIntent contentIntent = PendingIntent.getActivity(registrar.context(), 0, new Intent(registrar.context(), registrar.getClass()).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+
+
+        builder = new NotificationCompat.Builder(registrar.context(), CHANNEL_ID)
                 .setVibrate(null)
                 .setSound(null)
                 .setLights(0, 0, 0)
@@ -63,26 +58,27 @@ public class StatusNotification {
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setContentIntent(contentIntent)
                 .addAction(_isPlaying ? R.drawable.ic_pause : R.drawable.ic_play, "control", pendingToggleIntent);
         notification = builder.build();
-        notify(context, notification);
+        notify(registrar.context(), notification);
     }
 
-    public static void notify(final Context context,
+    public static void notify(final Registrar registrar,
                               final String title, final String content) {
         _title = title;
         _content = content;
-        notify(context);
+        notify(registrar);
     }
 
-    public static void setPlayState(final Context context, final boolean isPlaying) {
+    public static void setPlayState(final Registrar registrar, final boolean isPlaying) {
         _isPlaying = isPlaying;
-        notify(context);
+        notify(registrar);
     }
 
-    public static void setContent(final Context context, final String content) {
+    public static void setContent(final Registrar registrar, final String content) {
         _content = content;
-        notify(context);
+        notify(registrar);
     }
 
     @TargetApi(Build.VERSION_CODES.ECLAIR)
@@ -114,21 +110,5 @@ public class StatusNotification {
         } else {
             nm.cancel(NOTIFICATION_TAG.hashCode());
         }
-    }
-
-
-    private class MediaSessionCallback extends MediaSessionCompat.Callback {
-        MediaSessionCallback() {
-            super();
-        }
-
-        @Override
-        public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
-            super.onMediaButtonEvent(mediaButtonEvent);
-            //接收到监听事件
-            return true;
-
-        }
-
     }
 }
